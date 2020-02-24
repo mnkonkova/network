@@ -867,8 +867,8 @@ if __name__ == '__main__':
                 name_password[name] = password
             username1 = names[0]
             password1 = name_password[names[0]]
-            # username = names[1]
-            # password = name_password[names[1]]
+            username = names[1]
+            password = name_password[names[1]]
     
     if test != 'all':
         testing = name_tests[test]()
