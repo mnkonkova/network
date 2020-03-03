@@ -223,7 +223,9 @@ class Path():
                             self.paths[-1]['Path'] = 'no'
                             self.paths[-1]['Delay'] = ""
                         if start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
-                            print(self.paths[-1]['Path'])           
+                            print(self.paths[-1]['Path'])
+                elif start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
+                        print("no")        
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--top_file", help="network file", type=str)
