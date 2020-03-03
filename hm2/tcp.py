@@ -176,25 +176,20 @@ class Path():
         self.paths = []
         for i in range(n):
             for j in range(n):
-                self.paths.append({})
-                self.paths[-1]['Node 1'] = self.ids[i]
-                self.paths[-1]['Node 2'] = self.ids[j]
-                self.paths[-1]['Path type'] = 'main'
                 if W[i][j] < np.inf:
-                    self.paths[-1]['Path'] = str(paths[i][j])
-                    self.paths[-1]['Delay'] = W[i][j]
-                else:
-                    self.paths[-1]['Path'] = 'no'
-                    self.paths[-1]['Delay'] = ""
-                
-                if start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
-                    print(self.paths[-1]['Path'])
-                if create_reserved_paths:
                     self.paths.append({})
                     self.paths[-1]['Node 1'] = self.ids[i]
                     self.paths[-1]['Node 2'] = self.ids[j]
-                    self.paths[-1]['Path type'] = 'reserve'
-                    if W[i][j] < np.inf:
+                    self.paths[-1]['Path type'] = 'main'
+                    self.paths[-1]['Path'] = str(paths[i][j])
+                    self.paths[-1]['Delay'] = W[i][j]
+                    if start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
+                        print(self.paths[-1]['Path'])
+                    if create_reserved_paths:
+                        self.paths.append({})
+                        self.paths[-1]['Node 1'] = self.ids[i]
+                        self.paths[-1]['Node 2'] = self.ids[j]
+                        self.paths[-1]['Path type'] = 'reserve'
                         res_paths = []
                         for i1 in range(n):
                             res_paths.append([])
@@ -227,13 +222,8 @@ class Path():
                         else:
                             self.paths[-1]['Path'] = 'no'
                             self.paths[-1]['Delay'] = ""
-
-                    else:
-                        self.paths[-1]['Path'] = 'no'
-                        self.paths[-1]['Delay'] = ""
-
-                    if start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
-                        print(self.paths[-1]['Path'])           
+                        if start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
+                            print(self.paths[-1]['Path'])           
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--top_file", help="network file", type=str)
