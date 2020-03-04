@@ -3,9 +3,11 @@ import math
 import csv
 import numpy as np
 import argparse
+import os.path
 BIG_NUM = 10 ** 9
 DELAY = 4.83
 R = 6373.0
+
 class Node():
     def __init__(self, id_=None, label=None, latitude=None, longitude=None):
         self.id = id_
@@ -47,6 +49,10 @@ class Path():
         self.nodes = {}
         self.graph = {}
         self.parse(filename, lib=False)
+        if start_poit and self.nodes.get(start_poit) is None:
+            raise Exception('No such starting point :(')
+        if dist_point and self.nodes.get(dist_point) is None:
+            raise Exception('No such destination point :(')
         self.create_CSV1(filename.split('.')[0] + '_topo.csv')
         self.Floyd(create_reserved_paths=create_reserved_paths, start_poit=start_poit, dist_point=dist_point)
         self.create_CSV2(filename.split('.')[0] + '_routes.csv')
@@ -54,6 +60,8 @@ class Path():
     def parse(self, filename, lib=True):
         if filename[-4:] != '.gml':
             raise Exception('Needed *.gml')
+        if not os.path.isfile(filename):
+            raise Exception('No file')
         if lib:
             graph = nx.read_gml(filename, label='id')
             for node in graph.node:
@@ -148,12 +156,14 @@ class Path():
                 for j = 1 to n
                   W[i][j] = min(W[i][j], W[i][k] + W[k][j])
         '''
+
         n = len(self.nodes)
         #id in graph -> id in file
         self.ids = dict(enumerate(sorted([self.nodes[x].getId() for x in self.nodes])))
         #id in file -> id in graph
         self.ids_reversed = dict(zip(self.ids.values(), self.ids.keys()))
-        
+        def get_orig(x):
+            return self.ids[x]
         W = np.zeros((n, n)) + np.inf
         paths = []
         for i in range(n):
@@ -174,6 +184,8 @@ class Path():
                         W[i][j] = W[i][k] + W[k][j]
                         paths[i][j] = paths[i][k][:-1] + paths[k][j]
         self.paths = []
+        
+        print(n)
         for i in range(n):
             for j in range(n):
                 if W[i][j] < np.inf:
@@ -181,9 +193,9 @@ class Path():
                     self.paths[-1]['Node 1'] = self.ids[i]
                     self.paths[-1]['Node 2'] = self.ids[j]
                     self.paths[-1]['Path type'] = 'main'
-                    self.paths[-1]['Path'] = str(paths[i][j])
+                    self.paths[-1]['Path'] = str(list(map(get_orig, paths[i][j])))
                     self.paths[-1]['Delay'] = W[i][j]
-                    if start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
+                    if start_poit is not None and dist_point is not None and start_poit == self.ids[i] and dist_point == self.ids[j]:
                         print(self.paths[-1]['Path'])
                     if create_reserved_paths:
                         self.paths.append({})
@@ -217,18 +229,18 @@ class Path():
 
                         if W_res[i][j] < BIG_NUM * 3:
 #                             print(i, j, W_res[i][j], paths[i][j], res_paths[i][j])
-                            self.paths[-1]['Path'] = res_paths[i][j]
+                            self.paths[-1]['Path'] = str(list(map(get_orig, res_paths[i][j])))
                             self.paths[-1]['Delay'] = W_res[i][j] % BIG_NUM                            
                         else:
                             self.paths[-1]['Path'] = 'no'
                             self.paths[-1]['Delay'] = ""
-                        if start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
+                        if start_poit is not None and dist_point is not None and start_poit == self.ids[i] and dist_point == self.ids[j] :
                             print(self.paths[-1]['Path'])
-                elif start_poit is not None and dist_point is not None and start_poit == i and dist_point == j:
+                elif start_poit is not None and dist_point is not None and start_poit == self.ids[i] and dist_point == self.ids[j]:
                         print("no")        
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--top_file", help="network file", type=str)
+    parser.add_argument("-t", "--top_file", help="network file", type=str, required=True)
     parser.add_argument("-r", "--reserve", help="Reserve", action='store_true', default=False)
     parser.add_argument("-s", "--start", help="STart point", default=None, type=int)
     parser.add_argument("-d", "--destination", help="Destination point", default=None, type=int)
