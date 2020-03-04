@@ -185,7 +185,6 @@ class Path():
                         paths[i][j] = paths[i][k][:-1] + paths[k][j]
         self.paths = []
         
-        print(n)
         for i in range(n):
             for j in range(n):
                 if W[i][j] < np.inf:
