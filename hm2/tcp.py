@@ -10,7 +10,7 @@ R = 6373.0
 
 class Node():
     def __init__(self, id_=None, label=None, latitude=None, longitude=None):
-        self.id = id_
+        self.id = int(id_) if (id_ is not None) else None
         self.label = label
         self.latitude = float(latitude) if (latitude is not None) else None
         self.longitude = float(longitude) if (longitude is not None) else None
@@ -33,9 +33,9 @@ class Node():
     def __cmp__(self, node):
         return cmp(self.id, node)
     def getId(self):
-        return self.id
+        return int(self.id)
     def setId(self, id_):
-        self.id = id_
+        self.id = int(id_)
     def setLabel(self, label):
         self.label = label
     def setLatitude(self, latitude):
@@ -48,6 +48,7 @@ class Path():
     def __init__(self, filename, create_reserved_paths=True, start_poit=None, dist_point=None):
         self.nodes = {}
         self.graph = {}
+        self.directed = False
         self.parse(filename, lib=False)
         if start_poit and self.nodes.get(start_poit) is None:
             raise Exception('No such starting point :(')
@@ -104,6 +105,8 @@ class Path():
             with open(filename, 'r') as inputfile:
                 for line in inputfile:
                     concat = ""
+                    if line.lower().find("directed 1") != -1:
+                        self.directed = True
                     if line.find("node [") != -1:
                         s = inputfile.readline()
                         while s.find(']') == -1:
@@ -120,6 +123,10 @@ class Path():
                         if self.graph.get(self.nodes[edge[0]]) == None:
                             self.graph[self.nodes[edge[0]]] = []
                         self.graph[self.nodes[edge[0]]].append(self.nodes[edge[1]])
+                        if not self.directed:
+                            if self.graph.get(self.nodes[edge[1]]) == None:
+                                self.graph[self.nodes[edge[1]]] = []
+                            self.graph[self.nodes[edge[1]]].append(self.nodes[edge[0]])
     
     def create_CSV1(self, filename, newline='', delimiter='\t'):
         with open(filename, 'w', newline=newline) as csvfile:
@@ -128,8 +135,8 @@ class Path():
                           'Node 2 (id)', 'Node 2 (label)', 'Node 2 (longitude)', 'Node 2 (latitude)',
                           'Distance (km)', 'Delay (mks)'])
             writer.writeheader()
-            for node in self.graph:
-                self.graph[node].sort(key = lambda x: x.getId())
+            for node in sorted(self.graph.keys(), key = lambda x: int(x.getId())):
+                self.graph[node].sort(key = lambda x: int(x.getId()))
                 for edge in self.graph[node]:
                     writer.writerow({
                         'Node 1 (id)': node.id, 'Node 1 (label)': node.label,
