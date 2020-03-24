@@ -66,23 +66,24 @@ def serve_ftp(connection: socket.socket):
         if data['command'] != "PASSWD":
             SendJSON(connection, CreateJson("ERR", "Please, login first"))
             return
-        users_lock.acquire()
-        if name_password.get(username) == None:
-            name_password[username] = data['data']['password']
-            with open(user_pass, 'a+') as fp:
-                fp.write(username + " " + data['data']['password']+ "\n")
-            SendJSON(connection, CreateJson("OK", "Welocme, " + username))
-            online_users.append(username)
-        elif name_password[username] == data['data']['password']:
-            SendJSON(connection, CreateJson("OK", "Welocme, " + username))
-            online_users.append(username)
-        else:
-            users_lock.release()
-            if retry:
-                SendJSON(connection, CreateJson("ERR", "Wrong password")) 
-                return Password(sock, chars, username, retry=False)
-            Bye(sock, None, username)
-            return False
+        
+        with users_lock:
+            if name_password.get(username) == None:
+                name_password[username] = data['data']['password']
+                with open(user_pass, 'a+') as fp:
+                    fp.write(username + " " + data['data']['password']+ "\n")
+                SendJSON(connection, CreateJson("OK", "Welocme, " + username))
+                online_users.append(username)
+            elif name_password[username] == data['data']['password']:
+                SendJSON(connection, CreateJson("OK", "Welocme, " + username))
+                online_users.append(username)
+            else:
+                users_lock.release()
+                if retry:
+                    SendJSON(connection, CreateJson("ERR", "Wrong password")) 
+                    return Password(sock, chars, username, retry=False)
+                Bye(sock, None, username)
+                return False
         users_lock.release()
         return username
     def Bye(sock, data, username):
@@ -189,7 +190,7 @@ def run_server(port, host, client_handler):
             threading.Thread(target=client_handler, args=[in_connection]).start()
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', '1234'))
+    port = int(os.environ.get('PORT', '1235'))
     host = os.environ.get('HOST', "0.0.0.0")
     user_pass = os.environ.get('USERS', '/home/foxxmary/network/server/users')
     cars_file = os.environ.get('CARS', '/home/foxxmary/network/server/cars')
