@@ -17,3 +17,7 @@
 `os`, `socket`, `threading`, `json`, `time`
 
 3) Программы запускаются `python3 server.py`
+
+4) Сервер овечает на запросы `BUY`, `SELL`, `BYE`, `HELP`, `KEEPALIVE`, `TAKE`
+
+Более подробно см. в протоколе.
