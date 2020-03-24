@@ -54,7 +54,7 @@ def Sell(connection, message):
 def Take(connection, message):
     SendJSON(connection, json.dumps({'command': "TAKE", "data": message}, sort_keys=True))
 if __name__ == '__main__':
-    port = os.environ.get('PORT', '1234')
+    port = os.environ.get('PORT', '1235')
     host = os.environ.get('HOST', "0.0.0.0")
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
             try:
